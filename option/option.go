@@ -6,17 +6,7 @@ import (
 	"github.com/hirpc/hrpc/database"
 	"github.com/hirpc/hrpc/database/category"
 	"github.com/hirpc/hrpc/life"
-)
-
-type Environment string
-
-func (e Environment) String() string {
-	return string(e)
-}
-
-const (
-	Development Environment = "development"
-	Production  Environment = "production"
+	"github.com/hirpc/hrpc/plugin"
 )
 
 var (
@@ -35,6 +25,14 @@ type Options struct {
 	DBs          map[category.Category]database.Database
 	HealthCheck  bool
 
+	// StackSkip for logging that it can be used to debug stacks
+	// default: 1
+	StackSkip int
+	Plugins   []plugin.Plugin
+
+	// ServerCerts ...
+	ServerCerts *certs
+
 	WhenExit    []life.Listener
 	WhenRestart []life.Listener
 }
@@ -51,10 +49,9 @@ func (o Options) Valid() error {
 
 type Option func(*Options)
 
-// WithEnvironment sets the env
-func WithEnvironment(env Environment) Option {
+func WithStackSkip(i int) Option {
 	return func(o *Options) {
-		o.ENV = env
+		o.StackSkip = i
 	}
 }
 
@@ -64,9 +61,9 @@ func WithServerName(name string) Option {
 	}
 }
 
-func WithHealthCheck(v bool) Option {
+func WithHealthCheck() Option {
 	return func(o *Options) {
-		o.HealthCheck = v
+		o.HealthCheck = true
 	}
 }
 
@@ -76,13 +73,7 @@ func WithListenPort(port int) Option {
 	}
 }
 
-func WithConsul(c Consul) Option {
-	return func(o *Options) {
-		o.ConsulCenter = c
-	}
-}
-
-func WithDatabase(dbs ...database.Database) Option {
+func WithDatabases(dbs ...database.Database) Option {
 	return func(o *Options) {
 		for _, db := range dbs {
 			o.DBs[db.Category()] = db

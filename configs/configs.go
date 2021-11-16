@@ -8,26 +8,6 @@ import (
 	"github.com/hashicorp/consul/api"
 )
 
-func init() {
-	if token := os.Getenv("CONFIGS_TOKEN"); token != "" {
-		o.Token = token
-	}
-	if addr := os.Getenv("CONFIGS_ADDR"); addr != "" {
-		o.Address = addr
-	}
-	if dc := os.Getenv("CONFIGS_DATACENTER"); dc != "" {
-		o.DataCenter = dc
-	}
-}
-
-var (
-	c *api.Client
-	o = Option{
-		DataCenter: "dc1",
-		Prefix:     "development",
-	}
-)
-
 var (
 	// ErrKeyNotExist for invalid key provided
 	ErrKeyNotExist = errors.New("the key does not exist")
@@ -35,39 +15,82 @@ var (
 	ErrNotInitialized = errors.New("the client does not be initialized, call With() first")
 )
 
-// Option an option set
-type Option struct {
+type Configs interface {
+	Prefix() string
+	Get(key string) ([]byte, error)
+	Set(key, val string) error
+}
+
+type configs struct {
 	Token      string
 	DataCenter string
 	Address    string
-	Prefix     string
+	prefix     string
+
+	client *api.Client
 }
 
-func Register(opts ...Option) error {
-	for _, opt := range opts {
-		if opt.Token != "" {
-			o.Token = opt.Token
-		}
-		if opt.DataCenter != "" {
-			o.DataCenter = opt.DataCenter
-		}
-		if opt.Address != "" {
-			o.Address = opt.Address
-		}
-		if opt.Prefix != "" {
-			o.Prefix = opt.Prefix
-		}
+var cfg configs
+
+func New(addr, dc, prefix, token string) *configs {
+	cfg = configs{
+		DataCenter: dc,
+		prefix:     prefix,
+		Address:    addr,
+		Token:      token,
 	}
-	return client()
+	return &cfg
+}
+
+func (c *configs) DependsOn() []string {
+	return nil
+}
+
+func (c *configs) Name() string {
+	return "hrpc-configs"
+}
+
+func (c *configs) Loaded() bool {
+	return c != nil && c.client != nil
+}
+
+func (c *configs) mergeENV() {
+	if token := os.Getenv("CONFIGS_TOKEN"); token != "" {
+		c.Token = token
+	}
+	if addr := os.Getenv("CONFIGS_ADDR"); addr != "" {
+		c.Address = addr
+	}
+	if dc := os.Getenv("CONFIGS_DATACENTER"); dc != "" {
+		c.DataCenter = dc
+	}
+}
+
+func (c *configs) Load() error {
+	c.mergeENV()
+	config := api.DefaultConfig()
+	config.Address = c.Address
+	config.Token = c.Token
+	config.Datacenter = c.DataCenter
+	v, err := api.NewClient(config)
+	if err != nil {
+		return err
+	}
+	c.client = v
+	return nil
+}
+
+func (c *configs) Prefix() string {
+	return c.prefix
 }
 
 // Get returns the value of the key from consul
-func Get(key string) ([]byte, error) {
-	if c == nil {
+func (c *configs) Get(key string) ([]byte, error) {
+	if c.client == nil {
 		return nil, ErrNotInitialized
 	}
-	data, _, err := c.KV().Get(
-		fmt.Sprintf("%s/%s", o.Prefix, key),
+	data, _, err := c.client.KV().Get(
+		fmt.Sprintf("%s/%s", c.prefix, key),
 		nil,
 	)
 	if err != nil {
@@ -80,13 +103,13 @@ func Get(key string) ([]byte, error) {
 }
 
 // Set will push a config pair to consul
-func Set(key, val string) error {
-	if c == nil {
+func (c *configs) Set(key, val string) error {
+	if c.client == nil {
 		return ErrNotInitialized
 	}
-	_, err := c.KV().Put(
+	_, err := c.client.KV().Put(
 		&api.KVPair{
-			Key:   fmt.Sprintf("%s/%s", o.Prefix, key),
+			Key:   fmt.Sprintf("%s/%s", c.prefix, key),
 			Value: []byte(val),
 		}, nil,
 	)
@@ -96,24 +119,11 @@ func Set(key, val string) error {
 	return nil
 }
 
-func Prefix() string {
-	return o.Prefix
-}
-
 // Client returns the consul client
 func Client() *api.Client {
-	return c
+	return cfg.client
 }
 
-func client() error {
-	config := api.DefaultConfig()
-	config.Address = o.Address
-	config.Token = o.Token
-	config.Datacenter = o.DataCenter
-	v, err := api.NewClient(config)
-	if err != nil {
-		return err
-	}
-	c = v
-	return nil
+func Get() Configs {
+	return &cfg
 }

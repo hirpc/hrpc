@@ -10,19 +10,19 @@ import (
 
 var ErrInvalidCategory = errors.New("invalid database category")
 
-func (g GRPC) makeDatabase() error {
-	for k, v := range g.opts.DBs {
+func (h HRPC) makeDatabase() error {
+	for k, v := range h.opts.DBs {
 		var cfg []byte
 		var err error
 
 		switch k {
 		case category.MySQL:
-			cfg, err = configs.Get("databases/mysql")
+			cfg, err = configs.Get().Get("databases/mysql")
 			if err != nil {
 				return err
 			}
 		case category.Redis:
-			cfg, err = configs.Get("databases/redis")
+			cfg, err = configs.Get().Get("databases/redis")
 			if err != nil {
 				return err
 			}

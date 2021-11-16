@@ -1,34 +1,47 @@
 package server
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net"
 
-	"github.com/hirpc/hrpc/configs"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/hirpc/hrpc/life"
+	"github.com/hirpc/hrpc/log"
 	"github.com/hirpc/hrpc/option"
+	"github.com/hirpc/hrpc/tracer"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
-type GRPC struct {
+type HRPC struct {
 	server *grpc.Server
 	opts   *option.Options
 }
 
-func (g GRPC) Serve() error {
-	if err := g.makeDatabase(); err != nil {
+func (h HRPC) Run() error {
+	return h.makeDatabase()
+}
+
+func (h HRPC) Serve() error {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+	if err := h.makeDatabase(); err != nil {
 		return err
 	}
 
-	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", g.opts.ListenPort))
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", h.opts.ListenPort))
 	if err != nil {
 		return err
 	}
 	// registeration
 	if err := registeration(
-		g.opts.ID, g.opts.ServerName, g.opts.ListenPort,
-		[]string{g.opts.ENV.String()},
-		g.opts.HealthCheck,
+		h.opts.ID, h.opts.ServerName, h.opts.ListenPort,
+		[]string{h.opts.ENV.String()},
+		h.opts.HealthCheck,
 	); err != nil {
 		return err
 	}
@@ -39,35 +52,56 @@ func (g GRPC) Serve() error {
 				fmt.Println(err)
 			}
 		}()
-		g.server.Serve(lis)
+		h.server.Serve(lis)
 	}()
 
-	g.opts.WhenExit = append(g.opts.WhenExit, func() {
-		deregisteration(g.opts.ID)
-		g.server.Stop()
+	h.opts.WhenExit = append(h.opts.WhenExit, func() {
+		deregisteration(h.opts.ID)
+		h.server.Stop()
 	})
-	life.WhenExit(g.opts.WhenExit...)
-	life.WhenRestart(g.opts.WhenRestart...)
+	h.opts.WhenRestart = append(h.opts.WhenRestart, func() {
+		deregisteration(h.opts.ID)
+		h.server.Stop()
+	})
+	life.WhenExit(h.opts.WhenExit...)
+	life.WhenRestart(h.opts.WhenRestart...)
 	life.Start()
 	return nil
 }
 
-func (g GRPC) Server() *grpc.Server {
-	return g.server
+func (h HRPC) Server() *grpc.Server {
+	return h.server
 }
 
-func NewGRPC(opt *option.Options) (Server, error) {
-	// register configs center
-	if err := configs.Register(configs.Option{
-		Token:      opt.ConsulCenter.Token,
-		Address:    opt.ConsulCenter.Address,
-		Prefix:     opt.ENV.String(),
-		DataCenter: opt.ConsulCenter.DataCenter,
-	}); err != nil {
+func grpcOption(opt *option.Options) ([]grpc.ServerOption, error) {
+	gopt := []grpc.ServerOption{
+		grpc.UnaryInterceptor(
+			grpc_middleware.ChainUnaryServer(
+				tracer.AddTraceID,
+				log.AuditLog,
+			),
+		),
+	}
+	if opt.ServerCerts != nil {
+		cert, err := tls.X509KeyPair(opt.ServerCerts.PubKey, opt.ServerCerts.PriKey)
+		if err != nil {
+			return nil, err
+		}
+		gopt = append(gopt, grpc.Creds(credentials.NewServerTLSFromCert(&cert)))
+	}
+	return gopt, nil
+}
+
+func NewHRPC(opt *option.Options) (Server, error) {
+	// set current environment
+	env = opt.ENV
+	name = opt.ServerName
+	gopt, err := grpcOption(opt)
+	if err != nil {
 		return nil, err
 	}
-	return &GRPC{
-		server: grpc.NewServer(grpc.UnaryInterceptor(nil)),
+	return &HRPC{
+		server: grpc.NewServer(gopt...),
 		opts:   opt,
 	}, nil
 }

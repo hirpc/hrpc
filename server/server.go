@@ -6,12 +6,37 @@ import (
 	"github.com/hashicorp/consul/api"
 	"github.com/hirpc/arsenal/uniqueid"
 	"github.com/hirpc/hrpc/configs"
+	"github.com/hirpc/hrpc/option"
 	"google.golang.org/grpc"
 )
 
+var (
+	// env is the current environment
+	env = option.Development
+	// name is the name of server
+	name = ""
+)
+
+// Environment returns the current environment that the server is running for
+func Environment() option.Environment {
+	return env
+}
+
+// Name returns the name of this server
+func Name() string {
+	return name
+}
+
+// Server the server
 type Server interface {
-	Serve() error
+	// Server returns the gRPC server for registration at PB
 	Server() *grpc.Server
+	// Serve makes connections to databases and starts to listen ports to serve
+	// it will block the current thread
+	Serve() error
+	// Run same like Serve() but it does not register to consul and starts servers to block
+	// It will make connections to databases
+	Run() error
 }
 
 func registeration(id, name string, port int, tags []string, healthCheck bool) error {
