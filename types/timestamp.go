@@ -2,8 +2,9 @@ package types
 
 import (
 	"database/sql/driver"
-	"encoding/binary"
 	"errors"
+	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -20,7 +21,14 @@ func (t *Timestamp) Scan(src interface{}) error {
 	if !ok {
 		return errors.New("bad []byte type assertion")
 	}
-	ts := binary.BigEndian.Uint64(v)
-	*t = Timestamp{time.Unix(int64(ts), 0)}
+	ts, err := strconv.ParseInt(string(v), 10, 64)
+	if err != nil {
+		return err
+	}
+	*t = Timestamp{time.Unix(ts, 0)}
 	return nil
+}
+
+func (t Timestamp) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%d", t.Unix())), nil
 }
