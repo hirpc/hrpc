@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -19,7 +20,9 @@ func (t Timestamp) Value() (driver.Value, error) {
 func (t *Timestamp) Scan(src interface{}) error {
 	v, ok := src.([]byte)
 	if !ok {
-		return errors.New("bad []byte type assertion")
+		return errors.New(
+			"bad []byte type assertion, got name: " + reflect.TypeOf(src).Name() + " kind: " + reflect.TypeOf(src).Kind().String(),
+		)
 	}
 	ts, err := strconv.ParseInt(string(v), 10, 64)
 	if err != nil {
