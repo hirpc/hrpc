@@ -3,7 +3,8 @@ package types
 import (
 	"database/sql/driver"
 	"encoding/base64"
-	"errors"
+	"fmt"
+	"reflect"
 
 	"github.com/hirpc/hrpc/uerror"
 )
@@ -38,7 +39,11 @@ func (e EData) Value() (driver.Value, error) {
 func (e *EData) Scan(src interface{}) error {
 	v, ok := src.([]byte)
 	if !ok {
-		return errors.New("bad []byte type assertion")
+		return fmt.Errorf(
+			"bad []byte type assertion, got name: %v and kind: %v",
+			reflect.TypeOf(src).Name(),
+			reflect.TypeOf(src).Kind().String(),
+		)
 	}
 	d, err := base64.StdEncoding.DecodeString(string(v))
 	if err != nil {

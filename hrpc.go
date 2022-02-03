@@ -86,6 +86,9 @@ func BackgroundContext() context.Context {
 	msg.WithServerName(server.Name())
 	msg.WithNamespace(server.Environment().String())
 	msg.WithRequestTimeout(time.Second * 3)
+	ctx = metadata.NewOutgoingContext(
+		ctx, msg.Metadata(),
+	)
 	return metadata.NewIncomingContext(
 		ctx, msg.Metadata(),
 	)
