@@ -1,6 +1,6 @@
-package database
+package mq
 
-type Database interface {
+type MQ interface {
 	Load(src []byte) error
 	Connect() error
 	Name() string

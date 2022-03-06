@@ -8,9 +8,9 @@ import (
 	"github.com/hirpc/hrpc/codec"
 	"github.com/hirpc/hrpc/configs"
 	"github.com/hirpc/hrpc/database"
-	"github.com/hirpc/hrpc/database/category"
 	"github.com/hirpc/hrpc/log"
 	"github.com/hirpc/hrpc/log/hook"
+	"github.com/hirpc/hrpc/mq"
 	"github.com/hirpc/hrpc/option"
 	"github.com/hirpc/hrpc/plugin"
 	"github.com/hirpc/hrpc/server"
@@ -37,7 +37,8 @@ func NewServer(opts ...option.Option) (server.Server, error) {
 		ID:          uniqueid.String(),
 		ListenPort:  8888,
 		ENV:         option.Development,
-		DBs:         make(map[category.Category]database.Database),
+		DBs:         make(map[string]database.Database),
+		MQs:         make(map[string]mq.MQ),
 		HealthCheck: false,
 		StackSkip:   1,
 	}

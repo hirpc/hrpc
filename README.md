@@ -37,13 +37,13 @@ func main() {
             DataCenter: "",
 	}),
         // 开启mysql和redis的支持
-	option.WithDatabase(mysql.New(), redis.New()),
+	option.WithDatabases(mysql.New(), redis.New()),
         // 定义该服务的名称
 	option.WithServerName("服务名称"),
         // 定义环境，当前分为option.Development开发环境与option.Production生产环境
 	option.WithEnvironment(option.Development),
         // 如果开启健康检查，则会启动http服务监听本地6688端口用于consul的http请求探测
-	option.WithHealthCheck(true),
+	option.WithHealthCheck(),
     )
     if err != nil {
         panic(err)
@@ -113,7 +113,7 @@ func UserInfo(uid string) {
 - 如果与MySQL或者Redis建立连接失败，会在启动阶段panic
 - 如果中途连接断掉，会自动尝试重连；如果对应服务挂掉，则会直接error
 
-## 框架基本基本流程
+## 框架基本流程
 1. 服务启动，先规整配置信息并且有些依赖组件需要初始化，比如`uniqueid`
 2. 建立与consul的连接
 3. 对pb文件注册

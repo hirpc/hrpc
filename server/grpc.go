@@ -29,9 +29,6 @@ func (h HRPC) Serve() error {
 			fmt.Println(err)
 		}
 	}()
-	if err := h.makeDatabase(); err != nil {
-		return err
-	}
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", h.opts.ListenPort))
 	if err != nil {
@@ -100,8 +97,15 @@ func NewHRPC(opt *option.Options) (Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &HRPC{
+	h := &HRPC{
 		server: grpc.NewServer(gopt...),
 		opts:   opt,
-	}, nil
+	}
+	if err := h.makeDatabase(); err != nil {
+		return nil, err
+	}
+	if err := h.makeMessageQueue(); err != nil {
+		return nil, err
+	}
+	return h, nil
 }

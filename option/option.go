@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"github.com/hirpc/hrpc/database"
-	"github.com/hirpc/hrpc/database/category"
 	"github.com/hirpc/hrpc/life"
+	"github.com/hirpc/hrpc/mq"
 	"github.com/hirpc/hrpc/plugin"
 )
 
@@ -22,7 +22,8 @@ type Options struct {
 	ListenPort   int
 	ENV          Environment
 	ConsulCenter Consul
-	DBs          map[category.Category]database.Database
+	DBs          map[string]database.Database
+	MQs          map[string]mq.MQ
 	HealthCheck  bool
 
 	// StackSkip for logging that it can be used to debug stacks
@@ -76,7 +77,15 @@ func WithListenPort(port int) Option {
 func WithDatabases(dbs ...database.Database) Option {
 	return func(o *Options) {
 		for _, db := range dbs {
-			o.DBs[db.Category()] = db
+			o.DBs[db.Name()] = db
+		}
+	}
+}
+
+func WithMessageQueues(mqs ...mq.MQ) Option {
+	return func(o *Options) {
+		for _, m := range mqs {
+			o.MQs[m.Name()] = m
 		}
 	}
 }
