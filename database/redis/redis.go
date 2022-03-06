@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	redisv8 "github.com/go-redis/redis/v8"
-	"github.com/hirpc/hrpc/database/category"
 )
 
 type Option struct {
@@ -27,10 +26,16 @@ type Redis struct {
 
 var (
 	r *Redis
+	// ErrNil when key does not exist.
+	ErrNil = redisv8.Nil
 )
 
 // Get returns the handler to operate redis if success
 func Get() *redisv8.Client {
+	return r.conn
+}
+
+func Client() *redisv8.Client {
 	return r.conn
 }
 
@@ -79,8 +84,8 @@ func Valid() bool {
 	return true
 }
 
-func (r Redis) Category() category.Category {
-	return category.Redis
+func (r Redis) Name() string {
+	return "redis"
 }
 
 func (r *Redis) Destory() {

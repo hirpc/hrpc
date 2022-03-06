@@ -32,6 +32,9 @@ func (h HRPC) Serve() error {
 	if err := h.makeDatabase(); err != nil {
 		return err
 	}
+	if err := h.makeMessageQueue(); err != nil {
+		return err
+	}
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", h.opts.ListenPort))
 	if err != nil {

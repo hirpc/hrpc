@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	mySQL "github.com/go-sql-driver/mysql"
-	"github.com/hirpc/hrpc/database/category"
 )
 
 type Option struct {
@@ -33,6 +32,11 @@ var (
 
 // Get returns the handler to operate mysql if success
 func Get() *sql.DB {
+	return mm.conn
+}
+
+// Client returns the handler to operate mysql if success
+func Client() *sql.DB {
 	return mm.conn
 }
 
@@ -86,8 +90,8 @@ func Valid() bool {
 	return true
 }
 
-func (m MySQL) Category() category.Category {
-	return category.MySQL
+func (m MySQL) Name() string {
+	return "mysql"
 }
 
 func (m *MySQL) Destory() {
