@@ -9,7 +9,8 @@ import (
 
 type cls struct {
 	topic      string
-	credential tlog.Credential
+	Credential tlog.Credential `json:"credential"`
+	Endpoint   string          `json:"endpoint"`
 }
 
 var clslog *cls
@@ -26,7 +27,7 @@ func (c *cls) Load() error {
 	if err != nil {
 		return err
 	}
-	if err := json.Unmarshal([]byte(cfg), &c.credential); err != nil {
+	if err := json.Unmarshal([]byte(cfg), c); err != nil {
 		return err
 	}
 	return nil
@@ -44,5 +45,8 @@ func CLSHook() *tlog.TLog {
 	if clslog == nil {
 		return nil
 	}
-	return tlog.New(clslog.topic, clslog.credential)
+	if clslog.Endpoint != "" {
+		return tlog.New(clslog.topic, clslog.Credential, tlog.WithEndpoint(clslog.Endpoint))
+	}
+	return tlog.New(clslog.topic, clslog.Credential)
 }
