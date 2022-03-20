@@ -1,10 +1,12 @@
 package types
 
 import (
+	"bytes"
 	"database/sql/driver"
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"time"
 )
 
@@ -29,4 +31,17 @@ func (t *Timestamp) Scan(src interface{}) error {
 
 func (t Timestamp) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("%d", t.Unix())), nil
+}
+
+func (t *Timestamp) UnmarshalJSON(data []byte) error {
+	s := string(bytes.Trim(data, "\""))
+	v, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return err
+	}
+	var nt = Timestamp{
+		Time: time.Unix(v, 0),
+	}
+	*t = nt
+	return nil
 }
