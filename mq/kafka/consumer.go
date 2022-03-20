@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"context"
-	"time"
 
 	"github.com/Shopify/sarama"
 	"github.com/hirpc/hrpc/log"
@@ -40,14 +39,12 @@ func RegisterGroupConsumer(ctx context.Context, h Handler, groupID string, topic
 	go func(ctx context.Context, h Handler, g sarama.ConsumerGroup, topics ...string) {
 		defer g.Close()
 		for {
-			ctx, cancel := context.WithTimeout(ctx, time.Second*3)
 			if err := g.Consume(ctx, topics, consumerGroupHandler{
 				ctx: ctx,
 				h:   h,
 			}); err != nil {
 				log.WithFields(ctx).Error(err)
 			}
-			cancel()
 		}
 	}(ctx, h, g, topics...)
 }
