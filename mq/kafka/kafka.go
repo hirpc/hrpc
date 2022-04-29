@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/Shopify/sarama"
-	"github.com/hirpc/arsenal/uniqueid"
+	"github.com/hirpc/hrpc/utils/uniqueid"
 )
 
 type Kafka struct {

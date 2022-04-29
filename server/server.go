@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/consul/api"
-	"github.com/hirpc/arsenal/uniqueid"
 	"github.com/hirpc/hrpc/configs"
 	"github.com/hirpc/hrpc/option"
+	"github.com/hirpc/hrpc/utils/uniqueid"
 	"google.golang.org/grpc"
 )
 

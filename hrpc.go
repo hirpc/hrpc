@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/hirpc/arsenal/uniqueid"
 	"github.com/hirpc/hrpc/codec"
 	"github.com/hirpc/hrpc/configs"
 	"github.com/hirpc/hrpc/database"
@@ -16,25 +15,13 @@ import (
 	"github.com/hirpc/hrpc/server"
 	"github.com/hirpc/hrpc/tracer"
 	"github.com/hirpc/hrpc/utils/location"
+	"github.com/hirpc/hrpc/utils/uniqueid"
 	"google.golang.org/grpc/metadata"
 )
 
-func load() error {
-	if err := uniqueid.Register(); err != nil {
-		return err
-	}
-	return nil
-}
-
 // NewServer is the entrance of the framwork
 func NewServer(opts ...option.Option) (server.Server, error) {
-	// register some dependent components
-	if err := load(); err != nil {
-		return nil, err
-	}
-
 	var opt = &option.Options{
-		ID:          uniqueid.String(),
 		ListenPort:  8888,
 		ENV:         option.Development,
 		DBs:         make(map[string]database.Database),
@@ -49,7 +36,7 @@ func NewServer(opts ...option.Option) (server.Server, error) {
 		return nil, err
 	}
 
-	plugin.Register(location.New(), configs.New(
+	plugin.Register(uniqueid.New(), location.New(), configs.New(
 		opt.ConsulCenter.Address,
 		opt.ConsulCenter.DataCenter,
 		opt.ENV.String(),
@@ -59,6 +46,9 @@ func NewServer(opts ...option.Option) (server.Server, error) {
 	if err := plugin.Setup(); err != nil {
 		return nil, err
 	}
+
+	// fixup the ID
+	opt.ID = uniqueid.String()
 
 	if hook.CLSHook() != nil {
 		// init log component
