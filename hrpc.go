@@ -8,7 +8,7 @@ import (
 	"github.com/hirpc/hrpc/configs"
 	"github.com/hirpc/hrpc/database"
 	"github.com/hirpc/hrpc/log"
-	"github.com/hirpc/hrpc/log/hook"
+	"github.com/hirpc/hrpc/log/cls"
 	"github.com/hirpc/hrpc/mq"
 	"github.com/hirpc/hrpc/option"
 	"github.com/hirpc/hrpc/plugin"
@@ -50,20 +50,14 @@ func NewServer(opts ...option.Option) (server.Server, error) {
 	// fixup the ID
 	opt.ID = uniqueid.String()
 
-	if hook.CLSHook() != nil {
-		// init log component
-		log.With(log.Option{
-			Environment: opt.ENV.String(),
-			Hooks:       []hook.Hook{hook.CLSHook()},
-			StackSkip:   opt.StackSkip,
-		})
-	} else {
-		// init log component
-		log.With(log.Option{
-			Environment: opt.ENV.String(),
-			StackSkip:   opt.StackSkip,
-		})
+	logOpt := log.Option{
+		Environment: opt.ENV.String(),
+		StackSkip:   opt.StackSkip,
 	}
+	if cls.Hook() != nil {
+		logOpt.Hooks = append(logOpt.Hooks, cls.Hook())
+	}
+	log.With(logOpt)
 
 	// returns a new grpc server with desired options
 	return server.NewHRPC(opt)

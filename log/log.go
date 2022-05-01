@@ -35,9 +35,10 @@ func setup() {
 	logger.SetReportCaller(!option.DisableReportCaller)
 	logger.SetFormatter(option.Formatter)
 	for _, hook := range option.Hooks {
-		if err := hook.Establish(); err == nil {
-			logger.AddHook(hook)
+		if err := hook.Establish(); err != nil {
+			fmt.Println("** establishing log failed, " + err.Error())
 		}
+		logger.AddHook(hook)
 	}
 	logger.Out = option.Outer
 }
