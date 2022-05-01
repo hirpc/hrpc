@@ -2,6 +2,7 @@ package cls
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/hirpc/hrpc/configs"
@@ -69,13 +70,16 @@ func (c *cls) Establish() error {
 }
 
 func (t cls) Fire(entry *logrus.Entry) error {
-	return t.producer.SendLog(
+	if err := t.producer.SendLog(
 		t.topic,
 		clssdk.NewCLSLog(
 			time.Now().Unix(),
 			logContent(entry),
 		), nil,
-	)
+	); err != nil {
+		fmt.Println("failed to send log, " + err.Error())
+	}
+	return nil
 }
 
 func logContent(entry *logrus.Entry) map[string]string {
