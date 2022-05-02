@@ -43,7 +43,7 @@ func (c *callback) Success(result *clssdk.Result) {
 		res.ErrorCode = attempt.ErrorCode
 		res.ErrorMessage = attempt.ErrorMessage
 		res.RequestID = attempt.RequestId
-		res.Time = time.UnixMilli(attempt.TimeStampMs)
+		res.Time = time.Unix(attempt.TimeStampMs/1000, 0)
 		results = append(results, res)
 	}
 	c.fn(results...)
@@ -61,6 +61,6 @@ func (c *callback) Fail(result *clssdk.Result) {
 	res.ErrorCode = result.GetErrorCode()
 	res.ErrorMessage = result.GetErrorMessage()
 	res.RequestID = result.GetRequestId()
-	res.Time = time.UnixMilli(result.GetTimeStampMs())
+	res.Time = time.Unix(result.GetTimeStampMs()/1000, 0)
 	c.fn(res)
 }
