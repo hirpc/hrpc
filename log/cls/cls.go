@@ -28,6 +28,7 @@ func New(opts ...Option) *cls {
 	opt := Options{
 		// 默认入口
 		endpoint: "na-siliconvalley.cls.tencentcs.com",
+		callback: nil,
 	}
 	for _, o := range opts {
 		o(&opt)
@@ -50,7 +51,9 @@ func (c *cls) Load() error {
 	if c.opt.topicID != "" {
 		c.Topic = c.opt.topicID
 	}
-	cb = &callback{}
+	cb = &callback{
+		c.opt.callback,
+	}
 	return nil
 }
 
@@ -121,22 +124,4 @@ func (c cls) Levels() []logrus.Level {
 
 func Hook() *cls {
 	return clslog
-}
-
-type callback struct{}
-
-func (*callback) Success(result *clssdk.Result) {
-	attemptList := result.GetReservedAttempts()
-	for _, attempt := range attemptList {
-		fmt.Printf("%+v \n", attempt)
-	}
-}
-
-func (*callback) Fail(result *clssdk.Result) {
-	fmt.Println(result.IsSuccessful())
-	fmt.Println(result.GetErrorCode())
-	fmt.Println(result.GetErrorMessage())
-	fmt.Println(result.GetReservedAttempts())
-	fmt.Println(result.GetRequestId())
-	fmt.Println(result.GetTimeStampMs())
 }
