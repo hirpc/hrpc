@@ -21,7 +21,7 @@ type cls struct {
 
 var (
 	clslog *cls
-	cb     *Callback
+	cb     *callback
 )
 
 func New(opts ...Option) *cls {
@@ -50,7 +50,7 @@ func (c *cls) Load() error {
 	if c.opt.topicID != "" {
 		c.Topic = c.opt.topicID
 	}
-	cb = &Callback{}
+	cb = &callback{}
 	return nil
 }
 
@@ -123,17 +123,16 @@ func Hook() *cls {
 	return clslog
 }
 
-type Callback struct {
-}
+type callback struct{}
 
-func (callback *Callback) Success(result *clssdk.Result) {
+func (*callback) Success(result *clssdk.Result) {
 	attemptList := result.GetReservedAttempts()
 	for _, attempt := range attemptList {
 		fmt.Printf("%+v \n", attempt)
 	}
 }
 
-func (callback *Callback) Fail(result *clssdk.Result) {
+func (*callback) Fail(result *clssdk.Result) {
 	fmt.Println(result.IsSuccessful())
 	fmt.Println(result.GetErrorCode())
 	fmt.Println(result.GetErrorMessage())

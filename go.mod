@@ -20,7 +20,7 @@ require (
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
-	github.com/tencentcloud/tencentcloud-cls-sdk-go v1.0.2
+	github.com/tencentcloud/tencentcloud-cls-sdk-go v1.0.1
 	golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f // indirect
 	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
 	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150 // indirect
