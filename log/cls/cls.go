@@ -11,7 +11,7 @@ import (
 )
 
 type cls struct {
-	topic      string
+	Topic      string     `json:"topic_id"`
 	Credential Credential `json:"credential"`
 	Endpoint   string     `json:"endpoint"`
 
@@ -19,9 +19,12 @@ type cls struct {
 	opt      Options
 }
 
-var clslog *cls
+var (
+	clslog *cls
+	cb     *Callback
+)
 
-func New(topic string, opts ...Option) *cls {
+func New(opts ...Option) *cls {
 	opt := Options{
 		// 默认入口
 		endpoint: "na-siliconvalley.cls.tencentcs.com",
@@ -30,8 +33,7 @@ func New(topic string, opts ...Option) *cls {
 		o(&opt)
 	}
 	clslog = &cls{
-		topic: topic,
-		opt:   opt,
+		opt: opt,
 	}
 	return clslog
 }
@@ -44,6 +46,11 @@ func (c *cls) Load() error {
 	if err := json.Unmarshal([]byte(cfg), c); err != nil {
 		return err
 	}
+	// option value has highest priority
+	if c.opt.topicID != "" {
+		c.Topic = c.opt.topicID
+	}
+	cb = &Callback{}
 	return nil
 }
 
@@ -70,14 +77,13 @@ func (c *cls) Establish() error {
 	return nil
 }
 
-func (t cls) Fire(entry *logrus.Entry) error {
-	fmt.Println("** fire....: ", logContent(entry))
-	if err := t.producer.SendLog(
-		t.topic,
+func (c cls) Fire(entry *logrus.Entry) error {
+	if err := c.producer.SendLog(
+		c.Topic,
 		clssdk.NewCLSLog(
 			time.Now().Unix(),
 			logContent(entry),
-		), nil,
+		), cb,
 	); err != nil {
 		fmt.Println("failed to send log, " + err.Error())
 	}
@@ -115,4 +121,23 @@ func (c cls) Levels() []logrus.Level {
 
 func Hook() *cls {
 	return clslog
+}
+
+type Callback struct {
+}
+
+func (callback *Callback) Success(result *clssdk.Result) {
+	attemptList := result.GetReservedAttempts()
+	for _, attempt := range attemptList {
+		fmt.Printf("%+v \n", attempt)
+	}
+}
+
+func (callback *Callback) Fail(result *clssdk.Result) {
+	fmt.Println(result.IsSuccessful())
+	fmt.Println(result.GetErrorCode())
+	fmt.Println(result.GetErrorMessage())
+	fmt.Println(result.GetReservedAttempts())
+	fmt.Println(result.GetRequestId())
+	fmt.Println(result.GetTimeStampMs())
 }
