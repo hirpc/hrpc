@@ -62,6 +62,7 @@ func (c *cls) Establish() error {
 	producerConfig.AccessKeySecret = c.Credential.SecretKey
 	producerInstance, err := clssdk.NewAsyncProducerClient(producerConfig)
 	if err != nil {
+		fmt.Println("NewAsyncProducerClient failed, " + err.Error())
 		return err
 	}
 	producerInstance.Start()
@@ -70,6 +71,7 @@ func (c *cls) Establish() error {
 }
 
 func (t cls) Fire(entry *logrus.Entry) error {
+	fmt.Println("** fire....: ", logContent(entry))
 	if err := t.producer.SendLog(
 		t.topic,
 		clssdk.NewCLSLog(
