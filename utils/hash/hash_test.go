@@ -6,7 +6,7 @@ import (
 
 func TestSHA1(t *testing.T) {
 	type args struct {
-		d []string
+		d []interface{}
 	}
 	tests := []struct {
 		name string
@@ -16,23 +16,30 @@ func TestSHA1(t *testing.T) {
 		{
 			name: "Test1",
 			args: args{
-				d: []string{"aaa", "bbb"},
+				d: []interface{}{"aaa", "bbb"},
 			},
 			want: "68d8572c2662b0f06f723d7d507954fb038b8558",
 		},
 		{
 			name: "Test2",
 			args: args{
-				d: []string{},
+				d: []interface{}{},
 			},
 			want: "da39a3ee5e6b4b0d3255bfef95601890afd80709",
 		},
 		{
-			name: "Test2",
+			name: "Test3",
 			args: args{
-				d: []string{"", "", ""},
+				d: []interface{}{"", "", ""},
 			},
 			want: "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+		},
+		{
+			name: "Test4",
+			args: args{
+				d: []interface{}{"bbb", []byte("aa"), 10},
+			},
+			want: "ab3d52338d2099d3e451b4334434a4dddf647332",
 		},
 	}
 	for _, tt := range tests {
@@ -46,7 +53,7 @@ func TestSHA1(t *testing.T) {
 
 func TestMD5(t *testing.T) {
 	type args struct {
-		d []string
+		d []interface{}
 	}
 	tests := []struct {
 		name string
@@ -56,7 +63,7 @@ func TestMD5(t *testing.T) {
 		{
 			name: "Test1",
 			args: args{
-				d: []string{"aaa", "bbb"},
+				d: []interface{}{"aaa", "bbb"},
 			},
 			want: "6547436690a26a399603a7096e876a2d",
 		},
@@ -72,7 +79,7 @@ func TestMD5(t *testing.T) {
 
 func TestSHA256(t *testing.T) {
 	type args struct {
-		d []string
+		d []interface{}
 	}
 	tests := []struct {
 		name string
@@ -82,7 +89,7 @@ func TestSHA256(t *testing.T) {
 		{
 			name: "Test1",
 			args: args{
-				d: []string{"aaa", "bbb"},
+				d: []interface{}{"aaa", "bbb"},
 			},
 			want: "2ce109e9d0faf820b2434e166297934e6177b65ab9951dbc3e204cad4689b39c",
 		},

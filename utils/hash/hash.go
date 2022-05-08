@@ -6,23 +6,49 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
-	"strings"
 )
 
-func MD5(d ...string) string {
-	t := md5.New()
-	io.WriteString(t, strings.Join(d, ""))
-	return fmt.Sprintf("%x", t.Sum(nil))
+func MD5(vs ...interface{}) string {
+	h := md5.New()
+	for _, v := range vs {
+		switch val := v.(type) {
+		case string:
+			io.WriteString(h, val)
+		case []byte:
+			h.Write(val)
+		default:
+			io.WriteString(h, fmt.Sprintf("%v", val))
+		}
+	}
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
-func SHA1(d ...string) string {
-	t := sha1.New()
-	io.WriteString(t, strings.Join(d, ""))
-	return fmt.Sprintf("%x", t.Sum(nil))
+func SHA1(vs ...interface{}) string {
+	h := sha1.New()
+	for _, v := range vs {
+		switch val := v.(type) {
+		case string:
+			io.WriteString(h, val)
+		case []byte:
+			h.Write(val)
+		default:
+			io.WriteString(h, fmt.Sprintf("%v", val))
+		}
+	}
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
-func SHA256(d ...string) string {
-	t := sha256.New()
-	io.WriteString(t, strings.Join(d, ""))
-	return fmt.Sprintf("%x", t.Sum(nil))
+func SHA256(vs ...interface{}) string {
+	h := sha256.New()
+	for _, v := range vs {
+		switch val := v.(type) {
+		case string:
+			io.WriteString(h, val)
+		case []byte:
+			h.Write(val)
+		default:
+			io.WriteString(h, fmt.Sprintf("%v", val))
+		}
+	}
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
