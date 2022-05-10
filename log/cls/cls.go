@@ -66,6 +66,10 @@ func (c *cls) DependsOn() []string {
 }
 
 func (c *cls) Establish() error {
+	if c.producer != nil {
+		// if mutiple Establish() called, close the previous instance first
+		c.producer.Close(3000)
+	}
 	producerConfig := clssdk.GetDefaultAsyncProducerClientConfig()
 	producerConfig.Endpoint = c.opt.endpoint
 	producerConfig.AccessKeyID = c.Credential.SecretID
