@@ -33,19 +33,37 @@ type MSG interface {
 	ServerName() string
 	WithServerName(n string)
 
+	Client() ClientInfo
+	WithClient(ip, ua string)
+
 	Metadata() metadata.MD
 }
 
 type message struct {
-	context   context.Context `json:"-"`
-	ServerN   string          `json:"server_name"`
-	TID       string          `json:"trace_id"`
-	RTimeout  time.Duration   `json:"request_timeout"`
-	NameSpace string          `json:"namespace"`
+	context    context.Context `json:"-"`
+	ServerN    string          `json:"server_name"`
+	TID        string          `json:"trace_id"`
+	RTimeout   time.Duration   `json:"request_timeout"`
+	NameSpace  string          `json:"namespace"`
+	ClientInfo ClientInfo      `json:"client_info"`
+}
+
+type ClientInfo struct {
+	IP string `json:"ip"`
+	UA string `json:"ua"`
 }
 
 func (m *message) Context() context.Context {
 	return m.context
+}
+
+func (m *message) Client() ClientInfo {
+	return m.ClientInfo
+}
+
+func (m *message) WithClient(ip, ua string) {
+	m.ClientInfo.IP = ip
+	m.ClientInfo.UA = ua
 }
 
 func (m *message) TraceID() string {
