@@ -39,7 +39,7 @@ type Proxy interface {
 	// QueryRow will query a row from the database
 	// Ex.
 	// 		var v1 string
-	//		if err := p.QueryRow(ctx, []interface{}{&v1}, `SELECT xx FROM xx`, args); err != nil {
+	//		if err := p.QueryRow(ctx, `SELECT xx FROM xx`, []interface{}{&v1}, args); err != nil {
 	//			// error
 	//		}
 	QueryRow(ctx context.Context, query string, dest []interface{}, args ...interface{}) error

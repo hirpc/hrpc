@@ -99,11 +99,19 @@ import (
 
 func UserInfo(uid string) {
     // MySQL的访问
-    stmt, err := mysql.Get().Prepare(xxx)
-    if err != nil {
-        // ...
-    }
-    // ...
+    var v string
+	if err := mysql.Client().QueryRow(ctx, `
+	SELECT
+		uid
+	FROM
+		users_info
+	WHERE
+		uid = ? AND is_admin = 1 AND status = 0`, []interface{}{&v}, uid,
+	); err != nil {
+		if err != sql.ErrNoRows 
+		}
+		return err
+	
 
     // Redis的访问
     redis.Get().Set(xxx)
