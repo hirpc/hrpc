@@ -3,6 +3,7 @@ package mongodb
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,11 +13,12 @@ import (
 
 type Option struct {
 	Address  string `json:"address"`
-	DB       int    `json:"db"`
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Port     int    `json:"port"`
-	Network  string `json:"network"`
+}
+
+func (o Option) URI() string {
+	return fmt.Sprintf("mongodb://%s:%s@%s", o.Username, o.Password, o.Address)
 }
 
 type MongoDB struct {
@@ -36,7 +38,7 @@ func (m *MongoDB) Load(src []byte) error {
 func (m *MongoDB) Connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(m.option.URI()))
 	if err != nil {
 		return err
 	}
