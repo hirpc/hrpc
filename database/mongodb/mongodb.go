@@ -45,6 +45,7 @@ func (m *MongoDB) Connect() error {
 	if err := client.Ping(ctx, readpref.Primary()); err != nil {
 		return err
 	}
+	m.conn = client
 	return nil
 }
 
