@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/hirpc/hrpc/utils/hash"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -107,17 +108,22 @@ func (m *message) Metadata() metadata.MD {
 }
 
 func Message(ctx context.Context) MSG {
+	defaultMsg := message{
+		context:  ctx,
+		RTimeout: time.Second * 3,
+		TID:      hash.SHA256(time.Now().UnixNano()),
+	}
 	md, exist := metadata.FromIncomingContext(ctx)
 	if !exist {
-		return &message{context: ctx}
+		return &defaultMsg
 	}
 	vals := md.Get(MDMessage.String())
 	if len(vals) == 0 {
-		return &message{context: ctx}
+		return &defaultMsg
 	}
 	var msg message
 	if err := json.Unmarshal([]byte(vals[0]), &msg); err != nil {
-		return &message{context: ctx}
+		return &defaultMsg
 	}
 	msg.context = ctx
 	return &msg
