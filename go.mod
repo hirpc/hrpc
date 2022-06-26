@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/Shopify/sarama v1.34.1
 	github.com/armon/go-metrics v0.4.0 // indirect
+	github.com/dgraph-io/dgo/v210 v210.0.0-20220113041351-ba0e5dfc4c3e
 	github.com/frankban/quicktest v1.14.2 // indirect
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.6.0

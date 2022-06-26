@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hirpc/hrpc/database"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -86,3 +87,5 @@ func New() *MongoDB {
 	}
 	return m
 }
+
+var _ database.Database = (*MongoDB)(nil)
