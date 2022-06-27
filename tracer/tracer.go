@@ -9,6 +9,7 @@ import (
 
 	"github.com/hirpc/hrpc/codec"
 	"github.com/hirpc/hrpc/log"
+	"github.com/hirpc/hrpc/utils/hash"
 	"github.com/hirpc/hrpc/utils/uniqueid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -25,14 +26,17 @@ func prefix() string {
 }
 
 // NewID generates a random trace id in string
-func NewID() string {
+func NewID(serverName string) string {
+	if serverName != "" {
+		return hash.SHA256(serverName) + "." + uniqueid.String()
+	}
 	return prefix() + "." + uniqueid.String()
 }
 
 // AddTraceID will add an unique id to the ctx
 func AddTraceID(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-	traceid := NewID()
 	msg := codec.Message(ctx)
+	traceid := NewID(msg.ServerName())
 	if msg.TraceID() == "" {
 		msg.WithTraceID(traceid)
 	}

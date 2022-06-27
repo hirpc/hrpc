@@ -67,10 +67,10 @@ func NewServer(opts ...option.Option) (server.Server, error) {
 func BackgroundContext() context.Context {
 	ctx := context.Background()
 	msg := codec.Message(ctx)
-	msg.WithTraceID(tracer.NewID())
 	msg.WithServerName(server.Name())
 	msg.WithNamespace(server.Environment().String())
 	msg.WithRequestTimeout(time.Second * 3)
+	msg.WithTraceID(tracer.NewID(server.Name()))
 	ctx = metadata.NewOutgoingContext(
 		ctx, msg.Metadata(),
 	)
