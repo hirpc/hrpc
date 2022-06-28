@@ -83,7 +83,7 @@ func (d *dGraph) Connect() error {
 
 	var clients []api.DgraphClient
 	for _, target := range d.option.Targets {
-		c, err := grpc.Dial(target, insecure.NewCredentials())
+		c, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			return err
 		}

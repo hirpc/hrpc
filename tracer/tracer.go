@@ -9,7 +9,6 @@ import (
 
 	"github.com/hirpc/hrpc/codec"
 	"github.com/hirpc/hrpc/log"
-	"github.com/hirpc/hrpc/utils/hash"
 	"github.com/hirpc/hrpc/utils/uniqueid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -17,20 +16,17 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func prefix() string {
+func prefix(s string) string {
 	seed := time.Now().UnixNano()
 	rand.Seed(seed)
 	h := sha256.New()
-	h.Write([]byte(fmt.Sprintf("%v-%v", rand.Intn(99999), seed)))
+	h.Write([]byte(fmt.Sprintf("%s-%v-%v", s, rand.Intn(99999), seed)))
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 // NewID generates a random trace id in string
 func NewID(serverName string) string {
-	if serverName != "" {
-		return hash.SHA256(serverName) + "." + uniqueid.String()
-	}
-	return prefix() + "." + uniqueid.String()
+	return prefix(serverName) + "." + uniqueid.String()
 }
 
 // AddTraceID will add an unique id to the ctx
