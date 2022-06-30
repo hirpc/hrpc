@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/hirpc/hrpc/configs"
+	"github.com/hirpc/hrpc/option"
+	"github.com/hirpc/hrpc/server"
 )
 
 // Service represents a service
@@ -23,8 +25,14 @@ func (s Service) String() string {
 
 // Target returns a string that should be used in TKE environment only
 // since we can use DNS feature to find out the service IP to viste in case of the changes of POD IP
+// !!! The namespace in QCloud must be prod (stands for production) OR dev (stands for development).
+// Otherwise, the request can be failed.
 func (s Service) Target() string {
-	return fmt.Sprintf("%s:%d", s.Name, s.Port)
+	var namespace = "prod"
+	if server.Environment() == option.Development {
+		namespace = "dev"
+	}
+	return fmt.Sprintf("%s.%s.svc.cluster.local:%d", s.Name, namespace, s.Port)
 }
 
 // Get will return the best service based on the name and tag
