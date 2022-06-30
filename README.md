@@ -1,19 +1,23 @@
 # hrpc
 
 ## 基本介绍
+
 此框架当前主要用于特殊项目使用。
 
 ## 依赖
+
 - 腾讯云的容器服务（及其Istio做的Mesh）
 - Consul做配置管理与服务管理
 
 ## 基本架构
+
 1. 腾讯云多节点构建的容器集群，使用istio的sidecar模式，加入Mesh依赖。
 2. 部署consul于当前容器集群。得到集群内服务名。
 3. 编写其他模块服务（引用此框架），开启grpc接口。（如果选项中开启了健康检查，那么镜像的6688端口也会被打开，用于http请求的健康检查）
 4. 部署服务于容器集群（设置环境变量，表示consul地址、Token等信息）
 
 ## 加载方式
+
 ```
 import (
     "github.com/hirpc/hrpc"
@@ -60,6 +64,7 @@ func main() {
 ```
 
 ## 服务间调用
+
 ```
 import (
     "github.com/hirpc/hrpc/service"
@@ -89,6 +94,7 @@ func Example() error {
 ```
 
 ## 数据库访问
+
 前提需要在main.go的`hrpc.NewServer`中，传入`option.WithDatabase(mysql.New(), redis.New()),`选项。
 之后在其他子包中，可直接采用如下方式访问
 ```
@@ -122,6 +128,7 @@ func UserInfo(uid string) {
 - 如果中途连接断掉，会自动尝试重连；如果对应服务挂掉，则会直接error
 
 ## 框架基本流程
+
 1. 服务启动，先规整配置信息并且有些依赖组件需要初始化，比如`uniqueid`
 2. 建立与consul的连接
 3. 对pb文件注册
@@ -134,6 +141,7 @@ func UserInfo(uid string) {
 9. 阻塞监听退出等信号
 
 ## 有效环境变量
+
 - `CONFIGS_TOKEN` 配置中心token
 - `CONFIGS_ADDR` 配置中心请求地址
 - `CONFIGS_DATACENTER` 配置中心的数据中心
