@@ -52,7 +52,7 @@ func main() {
     if err != nil {
         panic(err)
     }
-    pb.RegisterAuthenticationCenterServiceServer(s.Server(), &authenticationCenterServerImpl{})
+    pb.RegisterXXXXXServiceServer(s.Server(), &xxxxxServerImpl{})
 
     // 如果有任何需要的析构函数，可以在`s.Serve()`执行前，进行注册
     // life.WhenExit(xxxx.Destory)
@@ -95,7 +95,7 @@ func Example() error {
 
 ## 数据库访问
 
-前提需要在main.go的`hrpc.NewServer`中，传入`option.WithDatabase(mysql.New(), redis.New()),`选项。
+前提需要在main.go的`hrpc.NewServer`中，传入`option.WithDatabases(mysql.New(), redis.New()),`选项。
 之后在其他子包中，可直接采用如下方式访问
 ```
 import (
