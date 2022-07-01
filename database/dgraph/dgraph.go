@@ -117,7 +117,6 @@ func (d *dGraph) Destory() {
 	for _, c := range d.conns {
 		c.Close()
 	}
-	return
 }
 
 // ------------ for implemation database.Database END-------- //

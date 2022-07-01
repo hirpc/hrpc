@@ -17,7 +17,10 @@ var (
 
 type Configs interface {
 	Prefix() string
+
 	Get(key string) ([]byte, error)
+	SGet(k string) ([]byte, error)
+
 	Set(key, val string) error
 }
 
@@ -30,9 +33,13 @@ type configs struct {
 	client *api.Client
 }
 
-var cfg configs
+var (
+	cfg        configs
+	serverName string
+)
 
-func New(addr, dc, prefix, token string) *configs {
+func New(addr, dc, prefix, token, sName string) *configs {
+	serverName = sName
 	cfg = configs{
 		DataCenter: dc,
 		prefix:     prefix,
@@ -85,6 +92,7 @@ func (c *configs) Prefix() string {
 }
 
 // Get returns the value of the key from consul
+// WARNING: Please try to use SGet() to get the configs from consul
 func (c *configs) Get(key string) ([]byte, error) {
 	if c.client == nil {
 		return nil, ErrNotInitialized
@@ -117,6 +125,30 @@ func (c *configs) Set(key, val string) error {
 		return err
 	}
 	return nil
+}
+
+// SGet is recommended to use for getting configs from consul instead of using `Get()` directly.
+// The main difference between `Get()` and `SGet()` is that the `SGet()` makes a limitation for the config's path.
+// Before using this function to retrive the configs, you should make sure that your configs must be created at:
+//	[environment]/services/[server name]/[your key]
+// Ex. the service name is `userservice`.
+//	   the config key is `abcd`
+//	development/services/userservice/abcd
+func (c *configs) SGet(k string) ([]byte, error) {
+	if c.client == nil {
+		return nil, ErrNotInitialized
+	}
+	data, _, err := c.client.KV().Get(
+		fmt.Sprintf("%s/services/%s/%s", c.prefix, serverName, k),
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+	if data == nil {
+		return nil, ErrKeyNotExist
+	}
+	return data.Value, nil
 }
 
 // Client returns the consul client

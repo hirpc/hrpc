@@ -41,6 +41,7 @@ func NewServer(opts ...option.Option) (server.Server, error) {
 		opt.ConsulCenter.DataCenter,
 		opt.ENV.String(),
 		opt.ConsulCenter.Token,
+		opt.ServerName,
 	))
 	plugin.Register(opt.Plugins...)
 	if err := plugin.Setup(); err != nil {
