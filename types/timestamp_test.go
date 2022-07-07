@@ -49,9 +49,6 @@ func TestTimestamp_MarshalJSON(t *testing.T) {
 }
 
 func TestTimestamp_Scan(t *testing.T) {
-	type fields struct {
-		Time time.Time
-	}
 	type args struct {
 		src interface{}
 	}
