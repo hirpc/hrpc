@@ -17,14 +17,15 @@ var (
 // Option defines
 type Options struct {
 	// ID is the service ID
-	ID           string
-	ServerName   string
-	ListenPort   int
-	ENV          Environment
-	ConsulCenter Consul
-	DBs          map[string]database.Database
-	MQs          map[string]mq.MQ
-	HealthCheck  bool
+	ID             string
+	ServerName     string
+	ListenPort     int
+	ENV            Environment
+	ConsulCenter   Consul
+	DBs            map[string]database.Database
+	MQs            map[string]mq.MQ
+	HealthCheck    bool
+	MetricsEnabled bool
 
 	// StackSkip for logging that it can be used to debug stacks
 	// default: 1
@@ -99,5 +100,11 @@ func WithExitListeners(listeners ...life.Listener) Option {
 func WithRestartListeners(listeners ...life.Listener) Option {
 	return func(o *Options) {
 		o.WhenRestart = append(o.WhenRestart, listeners...)
+	}
+}
+
+func WithMetrics() Option {
+	return func(o *Options) {
+		o.MetricsEnabled = true
 	}
 }

@@ -22,12 +22,13 @@ import (
 // NewServer is the entrance of the framwork
 func NewServer(opts ...option.Option) (server.Server, error) {
 	var opt = &option.Options{
-		ListenPort:  8888,
-		ENV:         option.Development,
-		DBs:         make(map[string]database.Database),
-		MQs:         make(map[string]mq.MQ),
-		HealthCheck: false,
-		StackSkip:   1,
+		ListenPort:     8888,
+		ENV:            option.Development,
+		DBs:            make(map[string]database.Database),
+		MQs:            make(map[string]mq.MQ),
+		HealthCheck:    false,
+		MetricsEnabled: false,
+		StackSkip:      1,
 	}
 	for _, o := range opts {
 		o(opt)

@@ -19,6 +19,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/serf v0.9.8 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/prometheus/client_golang v1.12.2 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/tencentcloud/tencentcloud-cls-sdk-go v1.0.2
 	go.mongodb.org/mongo-driver v1.9.1

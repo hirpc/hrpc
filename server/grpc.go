@@ -8,6 +8,7 @@ import (
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/hirpc/hrpc/life"
 	"github.com/hirpc/hrpc/log"
+	"github.com/hirpc/hrpc/metrics"
 	"github.com/hirpc/hrpc/option"
 	"github.com/hirpc/hrpc/tracer"
 	"google.golang.org/grpc"
@@ -41,6 +42,10 @@ func (h HRPC) Serve() error {
 		h.opts.HealthCheck,
 	); err != nil {
 		return err
+	}
+
+	if h.opts.MetricsEnabled {
+		metrics.Run(Name())
 	}
 
 	go func() {
