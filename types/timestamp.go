@@ -8,6 +8,9 @@ import (
 	"reflect"
 	"strconv"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
 )
 
 type Timestamp struct {
@@ -44,4 +47,13 @@ func (t *Timestamp) UnmarshalJSON(data []byte) error {
 	}
 	*t = nt
 	return nil
+}
+
+func (t Timestamp) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	return bson.MarshalValue(t.Time)
+}
+
+func (t *Timestamp) UnmarshalBSONValue(bType bsontype.Type, data []byte) error {
+	rv := bson.RawValue{Type: bType, Value: data}
+	return rv.Unmarshal(&t.Time)
 }
