@@ -80,3 +80,15 @@ func BackgroundContext() context.Context {
 		ctx, msg.Metadata(),
 	)
 }
+
+// Go is a type of implemation of goroutine but it has panic reovery feature
+func Go(ctx context.Context, fn func(ctx context.Context)) {
+	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				log.WithFields(ctx).Error(err)
+			}
+		}()
+		fn(ctx)
+	}()
+}
