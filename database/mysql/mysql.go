@@ -11,8 +11,8 @@ import (
 )
 
 type mySQL struct {
-	conn   *sql.DB
-	option Option
+	conn    *sql.DB
+	options Options
 }
 
 // TxFunc can be used for transaction operation
@@ -108,7 +108,12 @@ func Client() Proxy {
 }
 
 func (m *mySQL) Load(src []byte) error {
-	if err := json.Unmarshal(src, &m.option); err != nil {
+	// If the value of customized is true (enabled),
+	// which means DOES NOT use the configurations from the configuration center.
+	if m.options.customized {
+		return nil
+	}
+	if err := json.Unmarshal(src, &m.options); err != nil {
 		return err
 	}
 	return nil
@@ -116,11 +121,11 @@ func (m *mySQL) Load(src []byte) error {
 
 func (m mySQL) dataSource() string {
 	cfg := driver.Config{
-		Addr:                    fmt.Sprintf("%s:%d", m.option.Address, m.option.Port),
-		User:                    m.option.Username,
-		Passwd:                  m.option.Password,
+		Addr:                    fmt.Sprintf("%s:%d", m.options.Address, m.options.Port),
+		User:                    m.options.Username,
+		Passwd:                  m.options.Password,
 		Net:                     "tcp",
-		DBName:                  m.option.DBName,
+		DBName:                  m.options.DBName,
 		AllowNativePasswords:    true,
 		AllowCleartextPasswords: true,
 	}
@@ -137,8 +142,8 @@ func (m *mySQL) Connect() error {
 	if err := db.Ping(); err != nil {
 		return err
 	}
-	db.SetMaxOpenConns(m.option.MaxOpenConns)
-	db.SetMaxIdleConns(m.option.MaxIdleConns)
+	db.SetMaxOpenConns(m.options.MaxOpenConns)
+	db.SetMaxIdleConns(m.options.MaxIdleConns)
 	m.conn = db
 	return nil
 }
@@ -167,15 +172,20 @@ func (m *mySQL) Destory() {
 	}
 }
 
-func New() *mySQL {
+func New(opts ...Option) *mySQL {
+	var opt = Options{
+		Port:         3306,
+		MaxOpenConns: 3,
+		MaxIdleConns: 1,
+	}
+	for _, o := range opts {
+		o(&opt)
+	}
 	if mm != nil {
 		mm.Destory()
 	}
 	mm = &mySQL{
-		option: Option{
-			MaxOpenConns: 3,
-			MaxIdleConns: 1,
-		},
+		options: opt,
 	}
 	return mm
 }
