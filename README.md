@@ -146,6 +146,15 @@ func UserInfo(uid string) {
 - `CONFIGS_ADDR` 配置中心请求地址
 - `CONFIGS_DATACENTER` 配置中心的数据中心
 
+## 注册端口
+
+当一个服务启动后，以下端口可能会自动开启，如果端口被占用，可能导致异常。
+
+- `2112` metrics上报使用
+- `6688` consul健康探测
+- `8080` 本地http请求测试使用
+- `8888` grpc主服务提供端口（关键）
+
 ## 插件列表-
 
 - `hrpc-location` 用于实现常用时区信息
