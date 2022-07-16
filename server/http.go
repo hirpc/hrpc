@@ -1,6 +1,8 @@
 package server
 
-import "net/http"
+import (
+	"net/http"
+)
 
 func runHealthAccepter() error {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

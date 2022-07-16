@@ -159,5 +159,7 @@ func UserInfo(uid string) {
 
 - `hrpc-location` 用于实现常用时区信息
 - `hrpc-configs` 用于对接consul
+- `hrpc-tester` 用于http测试grpc接口
+- `hrpc-inmemory` 基于内存的一个简易map存储
 
 ## TODO:

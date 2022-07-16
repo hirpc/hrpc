@@ -12,25 +12,24 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-type Option struct {
-	Address  string `json:"address"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-func (o Option) URI() string {
+func (o Options) URI() string {
 	return fmt.Sprintf("mongodb://%s:%s@%s", o.Username, o.Password, o.Address)
 }
 
 type MongoDB struct {
-	conn   *mongo.Client
-	option Option
+	conn    *mongo.Client
+	options Options
 }
 
 var m *MongoDB
 
 func (m *MongoDB) Load(src []byte) error {
-	if err := json.Unmarshal(src, &m.option); err != nil {
+	// If the value of customized is true (enabled),
+	// which means DOES NOT use the configurations from the configuration center.
+	if m.options.customized {
+		return nil
+	}
+	if err := json.Unmarshal(src, &m.options); err != nil {
 		return err
 	}
 	return nil
@@ -39,7 +38,7 @@ func (m *MongoDB) Load(src []byte) error {
 func (m *MongoDB) Connect() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(m.option.URI()))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(m.options.URI()))
 	if err != nil {
 		return err
 	}
@@ -78,12 +77,19 @@ func Valid() bool {
 	return true
 }
 
-func New() *MongoDB {
+func New(opts ...Option) *MongoDB {
+	var options = Options{
+		customized: false,
+	}
+	for _, o := range opts {
+		o(&options)
+	}
+
 	if m != nil {
 		m.Destory()
 	}
 	m = &MongoDB{
-		option: Option{},
+		options: options,
 	}
 	return m
 }

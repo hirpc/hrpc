@@ -20,8 +20,16 @@ type HRPC struct {
 	opts   *option.Options
 }
 
+// Run can be used in cron jobs.
+// It will make connections to the enabled databases without serving a port
 func (h HRPC) Run() error {
-	return h.makeDatabase()
+	if err := h.makeDatabase(); err != nil {
+		return err
+	}
+	if err := h.makeMessageQueue(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (h HRPC) Serve() error {

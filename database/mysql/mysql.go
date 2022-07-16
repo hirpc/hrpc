@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	driver "github.com/go-sql-driver/mysql"
+	"github.com/hirpc/hrpc/database"
 	"github.com/hirpc/hrpc/uerror"
 )
 
@@ -173,19 +174,22 @@ func (m *mySQL) Destory() {
 }
 
 func New(opts ...Option) *mySQL {
-	var opt = Options{
+	var options = Options{
 		Port:         3306,
 		MaxOpenConns: 3,
 		MaxIdleConns: 1,
+		customized:   false,
 	}
 	for _, o := range opts {
-		o(&opt)
+		o(&options)
 	}
 	if mm != nil {
 		mm.Destory()
 	}
 	mm = &mySQL{
-		options: opt,
+		options: options,
 	}
 	return mm
 }
+
+var _ database.Database = (*mySQL)(nil)

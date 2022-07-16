@@ -5,42 +5,33 @@ import (
 	"fmt"
 
 	redisv8 "github.com/go-redis/redis/v8"
+	"github.com/hirpc/hrpc/database"
 )
 
-type Option struct {
-	Address  string `json:"address"`
-	DB       int    `json:"db"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Port     int    `json:"port"`
-	Network  string `json:"network"`
-	// Maximum number of retries before giving up.
-	// Default is 3 retries; -1 (not 0) disables retries.
-	MaxRetries int `json:"max_retries"`
+type Redis struct {
+	conn    *redisv8.Client
+	options Options
 }
 
-type Redis struct {
-	conn   *redisv8.Client
-	option Option
-}
+var r *Redis
 
 var (
-	r *Redis
 	// ErrNil when key does not exist.
 	ErrNil = redisv8.Nil
 )
 
-// Get returns the handler to operate redis if success
-func Get() *redisv8.Client {
-	return r.conn
-}
-
+// Client returns the handler to operate redis if success
 func Client() *redisv8.Client {
 	return r.conn
 }
 
 func (r *Redis) Load(src []byte) error {
-	if err := json.Unmarshal(src, &r.option); err != nil {
+	// If the value of customized is true (enabled),
+	// which means DOES NOT use the configurations from the configuration center.
+	if r.options.customized {
+		return nil
+	}
+	if err := json.Unmarshal(src, &r.options); err != nil {
 		return err
 	}
 	return nil
@@ -49,11 +40,11 @@ func (r *Redis) Load(src []byte) error {
 func (r Redis) dataSource() *redisv8.Options {
 	cfg := &redisv8.Options{
 		Network:    "tcp",
-		Addr:       fmt.Sprintf("%s:%d", r.option.Address, r.option.Port),
-		Username:   r.option.Username,
-		Password:   r.option.Password,
-		DB:         r.option.DB,
-		MaxRetries: r.option.MaxRetries,
+		Addr:       fmt.Sprintf("%s:%d", r.options.Address, r.options.Port),
+		Username:   r.options.Username,
+		Password:   r.options.Password,
+		DB:         r.options.DB,
+		MaxRetries: r.options.MaxRetries,
 	}
 	return cfg
 }
@@ -94,12 +85,24 @@ func (r *Redis) Destory() {
 	}
 }
 
-func New() *Redis {
+func New(opts ...Option) *Redis {
+	var options = Options{
+		Port:       6379,
+		DB:         0,
+		MaxRetries: 3,
+		customized: false,
+	}
+	for _, o := range opts {
+		o(&options)
+	}
+
 	if r != nil {
 		r.Destory()
 	}
 	r = &Redis{
-		option: Option{MaxRetries: 3},
+		options: options,
 	}
 	return r
 }
+
+var _ database.Database = (*Redis)(nil)
