@@ -53,7 +53,8 @@ func (m mySQL) Transaction(ctx context.Context, fn TxFunc) error {
 		return err
 	}
 	if err := fn(tx); err != nil {
-		return tx.Rollback()
+		tx.Rollback()
+		return err
 	}
 	tx.Commit()
 	return nil
