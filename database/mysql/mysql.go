@@ -64,7 +64,10 @@ func (m mySQL) Exec(ctx context.Context, query string, args ...interface{}) (sql
 	return m.conn.ExecContext(ctx, query, args...)
 }
 
-var ErrBreak = uerror.New(300, "break")
+var (
+	ErrBreak  = uerror.New(300, "break")
+	ErrNoRows = sql.ErrNoRows
+)
 
 func (m mySQL) Query(ctx context.Context, query string, next NextFunc, args ...interface{}) error {
 	stmt, err := m.conn.PrepareContext(ctx, query)
