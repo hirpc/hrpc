@@ -34,7 +34,7 @@ func (u *URL) Scan(src interface{}) error {
 }
 
 func (u URL) MarshalJSON() ([]byte, error) {
-	return []byte(u.String()), nil
+	return []byte("\"" + u.String() + "\""), nil
 }
 
 func (u *URL) UnmarshalJSON(data []byte) error {

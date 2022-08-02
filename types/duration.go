@@ -24,7 +24,7 @@ func (d *Duration) UnmarshalJSON(data []byte) error {
 }
 
 func (d Duration) MarshalJSON() ([]byte, error) {
-	return []byte(d.String()), nil
+	return []byte("\"" + d.String() + "\""), nil
 }
 
 func (d Duration) Value() (driver.Value, error) {
